@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCart AI | Product Recommendations</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="navbar">
+        <a class="brand" href="/">🛒 SmartCart <span>AI</span></a>
+        <p>Discover products you'll love</p>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <p class="eyebrow">SMART SHOPPING STARTS HERE</p>
+            <h1>Find your next favorite product.</h1>
+            <p>Search products and discover similar items with AI.</p>
+
+            <form action="/" method="GET" class="search-form">
+                <input
+                    type="text"
+                    name="q"
+                    value="{{ query }}"
+                    placeholder="Try headphones, books, laptop..."
+                    aria-label="Search products"
+                >
+                <button type="submit">Search</button>
+            </form>
+        </section>
+
+        {% if selected_product %}
+        <section class="section">
+            <a href="/" class="back-link">← Back to all products</a>
+            <h2>Because you selected {{ selected_product.title }}</h2>
+            <p class="section-description">
+                Products ranked by text similarity.
+            </p>
+
+            {% if recommendations %}
+            <div class="product-grid">
+                {% for product in recommendations %}
+                <article class="product-card">
+                    <div class="product-image">{{ product.emoji }}</div>
+                    <p class="category">{{ product.category }}</p>
+                    <h3>{{ product.title }}</h3>
+                    <p class="description">{{ product.description }}</p>
+                    <p class="price">₹{{ "%.2f"|format(product.price) }}</p>
+                    <p class="similarity">
+                        {{ product.similarity }}% text similarity
+                    </p>
+                    <a class="recommend-button"
+                       href="{{ url_for('recommend', product_id=product.id) }}">
+                        Explore similar
+                    </a>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>No similar products found.</p>
+            {% endif %}
+        </section>
+
+        {% else %}
+        <section class="section">
+            <h2>{% if query %}Search results{% else %}Explore products{% endif %}</h2>
+            <p class="section-description">
+                {% if query %}
+                    Results for "{{ query }}"
+                {% else %}
+                    Choose a product to get personalized-style recommendations.
+                {% endif %}
+            </p>
+
+            {% if products %}
+            <div class="product-grid">
+                {% for product in products %}
+                <article class="product-card">
+                    <div class="product-image">{{ product.emoji }}</div>
+                    <p class="category">{{ product.category }}</p>
+                    <h3>{{ product.title }}</h3>
+                    <p class="description">{{ product.description }}</p>
+                    <p class="price">₹{{ "%.2f"|format(product.price) }}</p>
+                    <a class="recommend-button"
+                       href="{{ url_for('recommend', product_id=product.id) }}">
+                        Get recommendations
+                    </a>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>No products found. Try another search term.</p>
+            {% endif %}
+        </section>
+        {% endif %}
+    </main>
+
+    <footer>
+        <p>SmartCart AI · Educational product recommendation project</p>
+    </footer>
+</body>
+</html>
