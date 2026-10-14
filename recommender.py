@@ -250,84 +250,128 @@ PRODUCTS = [
     },
 ]
 
+
+from pathlib import Path
+import joblib
+import pandas as pd
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+
+# Create the product DataFrame
 df = pd.DataFrame(PRODUCTS)
 
-# Combine text fields so the model can compare product meaning.
 df["features"] = (
-    df["title"] + " "
-    + df["category"] + " "
-    + df["description"]
+    df["title"].fillna("") + " "
+    + df["category"].fillna("") + " "
+    + df["description"].fillna("")
 )
 
-# Convert text into numerical TF-IDF vectors.
-vectorizer = TfidfVectorizer(stop_words="english")
-tfidf_matrix = vectorizer.fit_transform(df["features"])
+MODEL_PATH = (
+    Path(__file__).resolve().parent
+    / "artifacts"
+    / "recommendation_model.joblib"
+)
 
-# Compare each product with every other product.
-similarity_matrix = cosine_similarity(tfidf_matrix)
+
+def load_model():
+    """Load saved model artifacts or fit a fallback model."""
+    if MODEL_PATH.exists():
+        artifacts = joblib.load(MODEL_PATH)
+
+        # Ensure the saved model belongs to this product catalog.
+        if artifacts.get("product_ids") == df["id"].tolist():
+            return (
+                artifacts["vectorizer"],
+                artifacts["tfidf_matrix"],
+                artifacts["similarity_matrix"],
+            )
+
+    # Fallback: build the model if artifacts are missing or outdated.
+    vectorizer = TfidfVectorizer(
+        stop_words="english",
+        ngram_range=(1, 2),
+        max_features=5000,
+    )
+    tfidf_matrix = vectorizer.fit_transform(df["features"])
+    similarity_matrix = cosine_similarity(tfidf_matrix)
+
+    return vectorizer, tfidf_matrix, similarity_matrix
+
+
+vectorizer, tfidf_matrix, similarity_matrix = load_model()
 
 
 def get_all_products():
-    """Return all products for displaying on the website."""
+    """Return all products for the website."""
     return df.drop(columns=["features"]).to_dict(orient="records")
 
 
 def search_products(query):
-    """Find products matching the user's search."""
-    query = query.strip().lower()
+    """Search product titles, categories and descriptions."""
+    query = str(query).strip()
 
     if not query:
         return get_all_products()
 
-    matches = df[
-        df["features"].str.lower().str.contains(
-            query, regex=False, na=False
-        )
-    ]
+    # First, return direct matches.
+    mask = df["features"].str.contains(
+        query, case=False, regex=False, na=False
+    )
+    matches = df.loc[mask]
 
-    # If there are no direct text matches, use TF-IDF similarity.
-    if matches.empty:
-        query_vector = vectorizer.transform([query])
-        scores = cosine_similarity(query_vector, tfidf_matrix).flatten()
-        indices = scores.argsort()[::-1][:5]
-
-        results = df.iloc[indices].copy()
-        results["score"] = scores[indices]
-        results = results[results["score"] > 0]
-
-        return results.drop(
-            columns=["features", "score"], errors="ignore"
+    if not matches.empty:
+        return matches.drop(
+            columns=["features"]
         ).to_dict(orient="records")
 
-    return matches.drop(columns=["features"]).to_dict(orient="records")
+    # Otherwise, find products closest to the search text.
+    query_vector = vectorizer.transform([query])
+    scores = cosine_similarity(query_vector, tfidf_matrix).flatten()
+
+    ranked_indices = scores.argsort()[::-1]
+    results = []
+
+    for index in ranked_indices:
+        if scores[index] <= 0:
+            continue
+
+        product = df.iloc[index].drop(labels=["features"]).to_dict()
+        results.append(product)
+
+        if len(results) == 5:
+            break
+
+    return results
 
 
 def recommend_products(product_id, limit=4):
-    """Recommend products similar to a selected product."""
-    matches = df.index[df["id"] == product_id].tolist()
+    """Return products ranked by text similarity."""
+    matching_indices = df.index[df["id"] == product_id].tolist()
 
-    if not matches:
+    if not matching_indices:
         return []
 
-    product_index = matches[0]
-    scores = list(enumerate(similarity_matrix[product_index]))
+    product_index = matching_indices[0]
+    scores = similarity_matrix[product_index]
 
-    # Highest similarity first, excluding the selected product.
-    scores = sorted(scores, key=lambda item: item[1], reverse=True)
-    scores = [
-        (index, score)
-        for index, score in scores
-        if index != product_index
-    ][:limit]
+    ranked_indices = scores.argsort()[::-1]
+    recommendations = []
 
-    recommendations = df.iloc[
-        [index for index, score in scores]
-    ].copy()
+    for index in ranked_indices:
+        # Exclude the selected product itself.
+        if index == product_index:
+            continue
 
-    recommendations["similarity"] = [
-        round(score * 100, 1) for index, score in scores
-    ]
+        product = df.iloc[index].drop(
+            labels=["features"]
+        ).to_dict()
 
-    return recommendations.drop(
-        columns=["features"]
-    ).to_dict(orient="records")
+        product["similarity"] = round(float(scores[index]) * 100, 1)
+        recommendations.append(product)
+
+        if len(recommendations) >= max(0, limit):
+            break
+
+    return recommendations
