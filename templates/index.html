@@ -223,7 +223,7 @@
                         <h3>{{ selected_product.title }}</h3>
                         <p>{{ selected_product.description }}</p>
                     </div>
-                    <strong>₹{{ "{:,.0f}".format(selected_product.price) }}</strong>
+                    <strong>₹{{ "{:,.0f}".format(product.price|float) }}</strong>
                 </div>
                 {% set display_products = recommendations %}
             {% else %}
@@ -255,7 +255,7 @@
 
                         <div class="product-bottom">
                             <strong class="price">
-                                ₹{{ "{:,.0f}".format(product.price) }}
+                               ₹{{ "{:,.0f}".format(product.price|float) }}
                             </strong>
 
                             {% if product.similarity is defined %}
