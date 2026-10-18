@@ -1,19 +1,50 @@
-# app.py
 
 from flask import Flask, render_template, request
-from recommender import get_all_products, search_products, recommend_products
+from database import (
+    initialize_database,
+    get_database_products,
+    save_search,
+)
+from recommender import search_products, recommend_products
 
 app = Flask(__name__)
+
+# Create the database tables and synchronize products
+initialize_database()
 
 
 @app.route("/")
 def home():
     query = request.args.get("q", "").strip()
+    selected_category = request.args.get("category", "").strip()
 
+    # Read products from SQLite
+    products = get_database_products()
+
+    # Search products using the recommendation module
     if query:
+        save_search(query)
         products = search_products(query)
-    else:
-        products = get_all_products()
+
+    # Filter by category
+    if selected_category:
+        products = [
+            product for product in products
+            if product.get("category", "").lower()
+            == selected_category.lower()
+        ]
+
+    # Support category links that use ?q=Electronics
+    categories = {
+        "electronics", "clothing", "shoes", "books",
+        "home", "beauty", "accessories", "sports"
+    }
+
+    if query.lower() in categories and not selected_category:
+        products = [
+            product for product in get_database_products()
+            if product.get("category", "").lower() == query.lower()
+        ]
 
     return render_template(
         "index.html",
@@ -26,10 +57,11 @@ def home():
 
 @app.route("/recommend/<int:product_id>")
 def recommend(product_id):
-    all_products = get_all_products()
+    products = get_database_products()
 
     selected_product = next(
-        (p for p in all_products if p["id"] == product_id),
+        (product for product in products
+         if product["id"] == product_id),
         None,
     )
 
@@ -40,7 +72,7 @@ def recommend(product_id):
 
     return render_template(
         "index.html",
-        products=all_products,
+        products=products,
         query="",
         recommendations=recommendations,
         selected_product=selected_product,
