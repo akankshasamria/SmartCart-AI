@@ -1,0 +1,22 @@
+[33m6f075b7[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Create evaluate_recommender.py
+[33me60a9a0[m Create README.md
+[33mafe91c0[m Update smartcart.db
+[33m7bffaa6[m Create .gitignore
+[33mcab3557[m Update requirements.txt
+[33m0474899[m Create database.cpython-313.pyc
+[33m58f3472[m Create smartcart.db
+[33m9d57dff[m Update app.py
+[33m54ada69[m Update database.py
+[33m18b2e17[m Create database.py
+[33mb41f544[m Update recommendation_model.joblib
+[33m00211b6[m Update style.css
+[33m9902ea8[m Update recommendation_model.joblib
+[33m1e06258[m Update recommender.cpython-313.pyc
+[33m0205ff7[m Create app.cpython-313.pyc
+[33m814848c[m Update index.html
+[33mb79d82a[m Update style.css
+[33m5a65814[m Create recommendation_model.joblib
+[33mef8838f[m Update recommender.cpython-313.pyc
+[33m1470585[m Update requirements.txt
+[33m0d4a7a7[m Update recommender.py
+[33mbbcb094[m Create train_model.py
