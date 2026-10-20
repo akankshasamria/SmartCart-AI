@@ -23,7 +23,8 @@
     <header class="navbar glass">
         <a href="{{ url_for('home') }}" class="brand">
             <span class="brand-icon">✳</span>
-            <span>SmartCart <b>AI</b>
+            <span>
+                SmartCart <b>AI</b>
                 <small>SHOP BEYOND ORDINARY</small>
             </span>
         </a>
@@ -31,8 +32,9 @@
         <form action="{{ url_for('home') }}"
               method="GET" class="nav-search">
             <span>⌕</span>
-            <input type="search" name="q"
-                   value="{{ query }}"
+            <input type="search"
+                   name="q"
+                   value="{{ query or '' }}"
                    placeholder="Search products, categories..."
                    aria-label="Search products">
             <button type="submit">Search ↗</button>
@@ -49,8 +51,12 @@
         {% if selected_product %}
         <section class="section-heading">
             <span class="eyebrow">✦ YOUR PERSONALIZED DISCOVERY</span>
-            <h1>Because you liked <span>{{ selected_product.title }}</span></h1>
+            <h1>
+                Because you liked
+                <span>{{ selected_product.title }}</span>
+            </h1>
             <p>Explore products ranked by content similarity.</p>
+
             <a href="{{ url_for('home') }}" class="text-link">
                 ← Back to all products
             </a>
@@ -78,8 +84,9 @@
                 <form action="{{ url_for('home') }}"
                       method="GET" class="hero-search">
                     <span>⌕</span>
-                    <input type="search" name="q"
-                           value="{{ query }}"
+                    <input type="search"
+                           name="q"
+                           value="{{ query or '' }}"
                            placeholder="Try headphones, books, laptop..."
                            aria-label="Find a product">
                     <button type="submit">Discover ✦</button>
@@ -87,7 +94,7 @@
 
                 <div class="hero-stats">
                     <div>
-                        <strong>{{ products|length }}{% if query %}+{% endif %}</strong>
+                        <strong>{{ products|length }}</strong>
                         <span>Products shown</span>
                     </div>
                     <div>
@@ -104,15 +111,20 @@
             <div class="hero-art" aria-label="Shopping illustration">
                 <div class="orbit orbit-one"></div>
                 <div class="orbit orbit-two"></div>
+
                 <div class="floating-card float-one">🎧</div>
                 <div class="floating-card float-two">👟</div>
                 <div class="floating-card float-three">⌚</div>
+
                 <div class="hero-center">
                     <span>✳</span>
                     <strong>SMART<br>FINDS</strong>
                     <small>CURATED FOR YOU</small>
                 </div>
-                <div class="hero-sticker">GOOD<br>FINDS<br>ONLY ↗</div>
+
+                <div class="hero-sticker">
+                    GOOD<br>FINDS<br>ONLY ↗
+                </div>
             </div>
         </section>
         {% endif %}
@@ -122,9 +134,13 @@
             <div class="section-title-row">
                 <div>
                     <span class="eyebrow">PICK YOUR VIBE</span>
-                    <h2>Explore the universe<span class="accent">.</span></h2>
+                    <h2>
+                        Explore the universe<span class="accent">.</span>
+                    </h2>
                 </div>
-                <span class="section-note">A LITTLE BIT OF EVERYTHING ✦</span>
+                <span class="section-note">
+                    A LITTLE BIT OF EVERYTHING ✦
+                </span>
             </div>
 
             <div class="category-grid">
@@ -202,43 +218,60 @@
 
                     <h2>
                         {% if selected_product %}
-                            Made for your interests<span class="accent">.</span>
+                            Made for your interests
+                            <span class="accent">.</span>
                         {% elif query %}
-                            Results for "{{ query }}"<span class="accent">.</span>
+                            Results for "{{ query }}"
+                            <span class="accent">.</span>
                         {% else %}
-                            Finds worth a look<span class="accent">.</span>
+                            Finds worth a look
+                            <span class="accent">.</span>
                         {% endif %}
                     </h2>
                 </div>
 
                 <a class="text-link"
-                   href="{{ url_for('home') }}">View all ↗</a>
+                   href="{{ url_for('home') }}">
+                    View all ↗
+                </a>
             </div>
 
             {% if selected_product %}
                 <div class="selected-product glass">
-                    <div class="selected-emoji">{{ selected_product.emoji }}</div>
+                    <div class="selected-emoji">
+                        {{ selected_product.emoji }}
+                    </div>
+
                     <div>
                         <span class="eyebrow">YOU SELECTED</span>
                         <h3>{{ selected_product.title }}</h3>
                         <p>{{ selected_product.description }}</p>
                     </div>
-                    <strong>₹{{ "{:,.0f}".format(product.price|float) }}</strong>
+
+                    <strong>
+                        ₹{{ "{:,.0f}".format(selected_product.price|float) }}
+                    </strong>
                 </div>
-                {% set display_products = recommendations %}
+
+                {% set display_products = recommendations or [] %}
             {% else %}
-                {% set display_products = products %}
+                {% set display_products = products or [] %}
             {% endif %}
 
             {% if display_products %}
             <div class="product-grid">
                 {% for product in display_products %}
                 <article class="product-card glass">
+
                     <div class="product-visual">
                         <span class="product-number">
                             {{ "%02d"|format(loop.index) }}
                         </span>
-                        <span class="product-emoji">{{ product.emoji }}</span>
+
+                        <span class="product-emoji">
+                            {{ product.emoji }}
+                        </span>
+
                         <span class="visual-sparkle">✦</span>
                     </div>
 
@@ -255,7 +288,7 @@
 
                         <div class="product-bottom">
                             <strong class="price">
-                               ₹{{ "{:,.0f}".format(product.price|float) }}
+                                ₹{{ "{:,.0f}".format(product.price|float) }}
                             </strong>
 
                             {% if product.similarity is defined %}
@@ -266,8 +299,7 @@
                         </div>
 
                         <a class="product-action"
-                           href="{{ url_for('recommend',
-                                            product_id=product.id) }}">
+                           href="{{ url_for('recommend', product_id=product.id) }}">
                             {% if selected_product %}
                                 Explore this item <span>↗</span>
                             {% else %}
@@ -275,6 +307,7 @@
                             {% endif %}
                         </a>
                     </div>
+
                 </article>
                 {% endfor %}
             </div>
@@ -283,20 +316,28 @@
             <div class="empty-state glass">
                 <span>✧</span>
                 <h3>No matching products yet</h3>
-                <p>Try a broader search such as "tech", "shoes", or "books".</p>
+                <p>
+                    Try a broader search such as "tech", "shoes", or "books".
+                </p>
                 <a class="product-action"
-                   href="{{ url_for('home') }}">Explore everything ↗</a>
+                   href="{{ url_for('home') }}">
+                    Explore everything ↗
+                </a>
             </div>
             {% endif %}
         </section>
 
         <section class="bottom-banner glass">
             <div class="banner-symbol">✳</div>
+
             <div>
                 <span class="eyebrow">THE MORE YOU EXPLORE</span>
                 <h2>The more you discover.</h2>
-                <p>Choose a product to uncover related finds through AI.</p>
+                <p>
+                    Choose a product to uncover related finds through AI.
+                </p>
             </div>
+
             <a href="{{ url_for('home') }}" class="banner-button">
                 Keep exploring ↗
             </a>
@@ -306,9 +347,11 @@
             <a href="{{ url_for('home') }}" class="brand footer-brand">
                 ✳ SmartCart <b>AI</b>
             </a>
+
             <span>Built with Python, Flask & machine learning.</span>
             <span>Smart choices. Happier discoveries.</span>
         </footer>
+
     </main>
 </body>
 </html>
