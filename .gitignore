@@ -37,3 +37,10 @@ artifacts/
 .idea/
 .DS_Store
 Thumbs.db
+
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+.env
+smartcart.db
