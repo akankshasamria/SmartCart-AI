@@ -242,10 +242,9 @@ This project demonstrates practical work with:
 
 ## 👩‍💻 Author
 
-**<YOUR-NAME>**
+**Akanksha Samria**
 
-GitHub: <YOUR-GITHUB-PROFILE-URL>
-
+GitHub: https://github.com/akankshasamria
 ## 📄 License
 
 No license is specified yet. If you intend to distribute this project publicly, choose and add an appropriate open-source license.
